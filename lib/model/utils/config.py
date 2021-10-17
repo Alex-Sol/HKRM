@@ -268,7 +268,7 @@ __C.ROOT_DIR = osp.abspath(osp.join(osp.dirname(__file__), '..', '..', '..'))
 __C.ROOT_DATA = '/'
 # Data directory
 #__C.DATA_DIR = osp.abspath(osp.join(__C.ROOT_DIR, 'data'))
-__C.DATA_DIR = '../HKRM_data/data'
+__C.DATA_DIR = '../Sydney_captions'
 
 # Name (or path to) the matlab executable
 __C.MATLAB = 'matlab'
