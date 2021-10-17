@@ -100,11 +100,14 @@ class Know_Rout_mod(nn.Module):
 
     def forward(self, cat_feature):
         cat_feature_stop = Variable(cat_feature.data)
+
+        #compute G
         Adj_M1 = self.lay_1_compute_A(cat_feature_stop)
         # batch matrix-matrix product
         W_M1 = F.softmax(Adj_M1, 2)
 
         # batch matrix-matrix product
+        # fuse features according G
         cat_feature = torch.bmm(W_M1, cat_feature)
         cat_feature = self.transferW(cat_feature)
 

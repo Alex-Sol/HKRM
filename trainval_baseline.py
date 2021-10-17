@@ -20,12 +20,13 @@ import torchvision.transforms as transforms
 from torch.utils.data.sampler import Sampler
 from torch.autograd import Variable
 
-from roi_data_layer.roidb import combined_roidb
-from roi_data_layer.roibatchLoader import roibatchLoader
-from model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
-from model.utils.net_utils import weights_normal_init, save_net, load_net, \
+
+from lib.roi_data_layer.roidb import combined_roidb
+from lib.roi_data_layer.roibatchLoader import roibatchLoader
+from lib.model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
+from lib.model.utils.net_utils import weights_normal_init, save_net, load_net, \
       adjust_learning_rate, save_checkpoint, clip_gradient
-from model.faster_rcnn.resnet import resnet
+from lib.model.faster_rcnn.resnet import resnet
 import pickle
 
 
@@ -53,7 +54,7 @@ def parse_args():
                         default=100, type=int)
     parser.add_argument('--checkpoint_interval', dest='checkpoint_interval',
                         help='number of iterations to display',
-                        default=10000, type=int)
+                        default=5, type=int)
     parser.add_argument('--save_dir', dest='save_dir',
                         help='directory to save models', default="exps/baseline/models",
                         type=str)
@@ -161,6 +162,14 @@ if __name__ == '__main__':
       args.imdb_name = "voc_2007_trainval+voc_2012_trainval"
       args.imdbval_name = "voc_2007_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+  elif args.dataset == "pascal_voc_07":
+      args.imdb_name = "voc_2007_trainval"
+      args.imdbval_name = "voc_2007_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+  elif args.dataset == "dior":
+      args.imdb_name = "dior_train"
+      args.imdbval_name = "dior_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[2, 4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '10']
   elif args.dataset == "vg":
       args.imdb_name = "vg_train"
       args.imdbval_name = "vg_val"
@@ -296,6 +305,7 @@ if __name__ == '__main__':
         lr *= args.lr_decay_gamma
 
     data_iter = iter(dataloader)
+    print("iters_per_epoch: ", iters_per_epoch)
     for step in range(iters_per_epoch):
         data = next(data_iter)
         im_data.data.resize_(data[0].size()).copy_(data[0])
@@ -364,29 +374,29 @@ if __name__ == '__main__':
             loss_temp = 0
             start = time.time()
 
-    if args.mGPUs:
-        save_name = os.path.join(output_dir, '{}_{}_{}_{}_{}.pth'.format(str(args.dataset), str(args.net),
-                                                                         args.session, epoch, step))
-        save_checkpoint({
-            'session': args.session,
-            'epoch': epoch + 1,
-            'model': fasterRCNN.module.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'pooling_mode': cfg.POOLING_MODE,
-            'class_agnostic': args.class_agnostic,
-        }, save_name)
-    else:
-        save_name = os.path.join(output_dir, '{}_{}_{}_{}_{}.pth'.format(str(args.dataset), str(args.net),
-                                                                         args.session, epoch, step))
-        save_checkpoint({
-            'session': args.session,
-            'epoch': epoch + 1,
-            'model': fasterRCNN.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'pooling_mode': cfg.POOLING_MODE,
-            'class_agnostic': args.class_agnostic,
-        }, save_name)
-    print('save model: {}'.format(save_name))
+    # if args.mGPUs:
+    #     save_name = os.path.join(output_dir, '{}_{}_{}_{}_{}.pth'.format(str(args.dataset), str(args.net),
+    #                                                                      args.session, epoch, step))
+    #     save_checkpoint({
+    #         'session': args.session,
+    #         'epoch': epoch + 1,
+    #         'model': fasterRCNN.module.state_dict(),
+    #         'optimizer': optimizer.state_dict(),
+    #         'pooling_mode': cfg.POOLING_MODE,
+    #         'class_agnostic': args.class_agnostic,
+    #     }, save_name)
+    # else:
+    #     save_name = os.path.join(output_dir, '{}_{}_{}_{}_{}.pth'.format(str(args.dataset), str(args.net),
+    #                                                                      args.session, epoch, step))
+    #     save_checkpoint({
+    #         'session': args.session,
+    #         'epoch': epoch + 1,
+    #         'model': fasterRCNN.state_dict(),
+    #         'optimizer': optimizer.state_dict(),
+    #         'pooling_mode': cfg.POOLING_MODE,
+    #         'class_agnostic': args.class_agnostic,
+    #     }, save_name)
+    # print('save model: {}'.format(save_name))
 
     end = time.time()
     print(end - start)

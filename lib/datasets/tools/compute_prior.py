@@ -7,6 +7,7 @@ NUM_ATTR_REL = 200
 def cout_w(prob, num=NUM_ATTR_REL,dim=1):
     prob_weight = prob[:, :num]
     sum_value = np.sum(prob_weight, keepdims=True, axis=dim) + 0.1
+    temp = np.repeat(sum_value, prob_weight.shape[dim], axis=dim)
     prob_weight = prob_weight / np.repeat(sum_value, prob_weight.shape[dim], axis=dim)
     return prob_weight
 
@@ -36,7 +37,7 @@ def compute_js(attr_prob):
     return similarity
 
 if __name__=='__main__':
-    data_path = '/data/VisualGenome/graph/'
+    data_path = '../../../data/VisualGenome/graph/'
     dim_ = 1000
     ## Compute attribute knowledge by JS-diversion
     graph_a = pickle.load(open(data_path + 'vg_attr_frequency_1000.pkl', 'rb'))
@@ -44,10 +45,11 @@ if __name__=='__main__':
     ## You can get part of graph_a and match name with your datasets
     #  We give an example of compute graph of VisualGenome with 1000 classes
     #  first line of graph_a is background
-    graph_a = cout_w(graph_a, num=len(graph_a))
+    graph_a = cout_w(graph_a, num=len(graph_a))  #按行归一
     graph_a = compute_js(graph_a)
     graph_a = 1 - graph_a
-    pickle.dump(graph_a, open(data_path + 'vg_graph_a.pkl', 'wb'))
+    # 知道会是在 Python2 环境中执行读取 pkl 文件，则在生成 pkl 文件时加入 protocol=2
+    pickle.dump(graph_a, open(data_path + 'vg_graph_a.pkl', 'wb'), protocol=2)
 
     ## Compute relation knowledge
     graph_r = pickle.load(open(data_path + 'vg_pair_frequency_1000.pkl', 'rb'))
@@ -66,4 +68,4 @@ if __name__=='__main__':
     prob_relation_matrix_ba = np.zeros((dim_ + 1, dim_ + 1))
     prob_relation_matrix_ba[1:, 1:] = prob_relation_matrix
     print(prob_relation_matrix_ba.shape)
-    pickle.dump(prob_relation_matrix_ba, open(data_path + 'vg_graph_r.pkl', 'wb'))
+    pickle.dump(prob_relation_matrix_ba, open(data_path + 'vg_graph_r.pkl', 'wb'), protocol=2)

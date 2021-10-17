@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # --------------------------------------------------------
 # Pytorch multi-GPU HKRM
 # Written by Chenhan Jiang, Hang Xu, based on code from Jianwei Yang
@@ -20,13 +21,26 @@ import torchvision.transforms as transforms
 from torch.utils.data.sampler import Sampler
 from torch.autograd import Variable
 
-from roi_data_layer.roidb import combined_roidb
-from roi_data_layer.roibatchLoader import roibatchLoader
-from model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
-from model.utils.net_utils import weights_normal_init, save_net, load_net, \
+
+from lib.roi_data_layer.roidb import combined_roidb
+from lib.roi_data_layer.roibatchLoader import roibatchLoader
+from lib.model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
+from lib.model.utils.net_utils import weights_normal_init, save_net, load_net, \
       adjust_learning_rate, save_checkpoint, clip_gradient
-from model.HKRM.resnet_HKRM import resnet
+from lib.model.HKRM.resnet_HKRM import resnet
 import pickle
+
+#解决模型版本比pytorch版本高的问题
+import torch._utils
+try:
+    torch._utils._rebuild_tensor_v2
+except AttributeError:
+    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
+        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor.requires_grad = requires_grad
+        tensor._backward_hooks = backward_hooks
+        return tensor
+    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 
 
@@ -180,9 +194,9 @@ if __name__ == '__main__':
       args.imdb_name = "ade_train_5"
       args.imdbval_name = "ade_val_5"
       args.set_cfgs = ['ANCHOR_SCALES', '[2, 4, 8, 16, 32]', 'MAX_NUM_GT_BOXES', '50']
-      cls_r_prob = pickle.load(open('data/graph/ade_graph_r.pkl', 'rb'))
+      cls_r_prob = pickle.load(open('../HKRM_data/data/graph/ade_graph_r_py2.pkl', 'rb'))
       cls_r_prob = np.float32(cls_r_prob)
-      cls_a_prob = pickle.load(open('data/graph/ade_graph_a.pkl', 'rb'))
+      cls_a_prob = pickle.load(open('../HKRM_data/data/graph/ade_graph_a_py2.pkl', 'rb'))
       cls_a_prob = np.float32(cls_a_prob)
   elif args.dataset == "vgbig":
       args.imdb_name = "vg_train_big"
@@ -191,6 +205,14 @@ if __name__ == '__main__':
       cls_r_prob = pickle.load(open('data/graph/vg_big_graph_r.pkl', 'rb'))
       cls_r_prob = np.float32(cls_r_prob)
       cls_a_prob = pickle.load(open('data/graph/vg_big_graph_a.pkl', 'rb'))
+      cls_a_prob = np.float32(cls_a_prob)
+  elif args.dataset == "pascal_voc_07":
+      args.imdb_name = "voc_2007_trainval"
+      args.imdbval_name = "voc_2007_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+      cls_r_prob = pickle.load(open('../HKRM_data/data/graph/VOC_graph_r_py2.pkl', 'rb'))
+      cls_r_prob = np.float32(cls_r_prob)
+      cls_a_prob = pickle.load(open('../HKRM_data/data/graph/VOC_graph_a_py2.pkl', 'rb'))
       cls_a_prob = np.float32(cls_a_prob)
 
   args.cfg_file = "cfgs/res101_ms.yml"
@@ -265,8 +287,7 @@ if __name__ == '__main__':
     fasterRCNN = resnet(imdb.classes, None, cls_r_prob, 101, class_agnostic=args.class_agnostic,
                             modules_size=module_size)
   elif args.net == 'Spatial':
-    module_size = [0, 0, args.spat_size]
-    fasterRCNN = resnet(imdb.classes, None, None, 101, class_agnostic=args.class_agnostic, modules_size=module_size)
+a    fasterRCNN = resnet(imdb.classes, None, None, 101, class_agnostic=args.class_agnostic, modules_size=module_size)
   else:
     print('No module define')
 

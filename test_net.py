@@ -20,13 +20,13 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.optim as optim
 import pickle
-from roi_data_layer.roidb import combined_roidb
-from roi_data_layer.roibatchLoader import roibatchLoader
-from model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
-from model.rpn.bbox_transform import clip_boxes
-from model.nms.nms_wrapper import nms
-from model.rpn.bbox_transform import bbox_transform_inv
-from model.utils.net_utils import save_net, load_net, vis_detections, vis_detections_label_only
+from lib.roi_data_layer.roidb import combined_roidb
+from lib.roi_data_layer.roibatchLoader import roibatchLoader
+from lib.model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
+from lib.model.rpn.bbox_transform import clip_boxes
+from lib.model.nms.nms_wrapper import nms
+from lib.model.rpn.bbox_transform import bbox_transform_inv
+from lib.model.utils.net_utils import save_net, load_net, vis_detections, vis_detections_label_only
 
 from matplotlib import pyplot as plt
 import pdb
@@ -51,10 +51,10 @@ def parse_args():
     ## Define Model and data
     parser.add_argument('--dataset', dest='dataset',
                         help='training dataset:ade,vg,vgbig,coco,pascal_07_12',
-                        default='vg', type=str)
+                        default='dior', type=str)
     parser.add_argument('--net', dest='net',
                         help='Attribute,Relation,Spatial,HKRM,baseline',
-                        default='HKRM', type=str)
+                        default='baseline', type=str)
     parser.add_argument('--attr_size', dest='attr_size',
                         help='Attribute module output size',
                         default=256, type=int)
@@ -79,23 +79,23 @@ def parse_args():
                         default=0, type=int)
     # resume trained model
     parser.add_argument('--load_dir', dest='load_dir',
-                        help='directory to load models', default="exps",
+                        help='directory to load models', default="/media/2T/lizeng/ORGM/HKRM/checkpoints/baseline/",
                         type=str)
     parser.add_argument('--checksession', dest='checksession',
                         help='checksession to load model',
-                        default=3256, type=int)
+                        default=1, type=int)
     parser.add_argument('--checkepoch', dest='checkepoch',
                         help='checkepoch to load network',
-                        default=12, type=int)
+                        default=19, type=int)
     parser.add_argument('--checkpoint', dest='checkpoint',
                         help='checkpoint to load network',
-                        default=21985, type=int)
+                        default=5861, type=int)
     # Others
     parser.add_argument('--bs', dest='batch_size',
                         help='batch_size',
                         default=1, type=int)
     parser.add_argument('--vis', dest='vis',
-                        help='visualization mode',
+                        help='visualization mode',default=True,
                         action='store_true')
     parser.add_argument('--save', dest='save_dir',
                         help='directory to save logs', default='HKRM',
@@ -111,9 +111,9 @@ if __name__ == '__main__':
     args = parse_args()
 
     if args.net == 'baseline':
-    	from model.faster_rcnn.resnet import resnet
+    	from lib.model.faster_rcnn.resnet import resnet
     else:
-        from model.HKRM.resnet_HKRM import resnet
+        from lib.model.HKRM.resnet_HKRM import resnet
 
     print('Called with args:')
     print(args)
@@ -161,7 +161,22 @@ if __name__ == '__main__':
         cls_r_prob = pickle.load(open('data/VOC_graph_r.pkl', 'rb'))
         cls_r_prob = np.float32(cls_r_prob)
         cls_a_prob = pickle.load(open('data/VOC_graph_a.pkl', 'rb'))
-        cls_a_prob = np.float32(cls_a_prob)
+    elif args.dataset == "pascal_voc_07":
+        args.imdb_name = "voc_2007_trainval"
+        args.imdbval_name = "voc_2007_test"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+        # cls_r_prob = pickle.load(open('data/VOC_graph_r.pkl', 'rb'))
+        # cls_r_prob = np.float32(cls_r_prob)
+        # cls_a_prob = pickle.load(open('data/VOC_graph_a.pkl', 'rb'))
+        # cls_a_prob = np.float32(cls_a_prob)
+    elif args.dataset == "dior":
+        args.imdb_name = "dior_train"
+        args.imdbval_name = "dior_test"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+        # cls_r_prob = pickle.load(open('data/VOC_graph_r_py2.pkl', 'rb'))
+        # cls_r_prob = np.float32(cls_r_prob)
+        # cls_a_prob = pickle.load(open('data/VOC_graph_a_py2.pkl', 'rb'))
+        # cls_a_prob = np.float32(cls_a_prob)
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -173,7 +188,7 @@ if __name__ == '__main__':
 
     cfg.TRAIN.USE_FLIPPED = False
     imdb, roidb, ratio_list, ratio_index = combined_roidb(args.imdbval_name, False)
-    imdb.competition_mode(on=True)
+    imdb.competition_mode(on=False)
 
     print('{:d} roidb entries'.format(len(roidb)))
 
@@ -202,7 +217,7 @@ if __name__ == '__main__':
         fasterRCNN = resnet(imdb.classes, None, None, 101, class_agnostic=args.class_agnostic, modules_size=module_size)
     elif args.net == 'baseline':
         fasterRCNN = resnet(imdb.classes, 101, pretrained=False, class_agnostic=args.class_agnostic)
-        load_name = os.path.join(input_dir, '{}_faster_rcnn.pth'.format(args.dataset))
+        #load_name = os.path.join(input_dir, '{}_faster_rcnn.pth'.format(args.dataset))
     else:
         print('No module define')
 
@@ -269,7 +284,6 @@ if __name__ == '__main__':
     fasterRCNN.eval()
     empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
     for i in range(num_images):
-
         data = next(data_iter)
         im_data.data.resize_(data[0].size()).copy_(data[0])
         im_info.data.resize_(data[1].size()).copy_(data[1])
@@ -312,7 +326,7 @@ if __name__ == '__main__':
         detect_time = det_toc - det_tic
         misc_tic = time.time()
         if vis:
-            im = cv2.imread(imdb.image_path_from_index(int(data[4])))
+            im = cv2.imread(imdb.image_path_at(int(data[4])))
             im2show = np.copy(im)
         for j in range(1, imdb.num_classes):
             inds = torch.nonzero(scores[:, j] > thresh).view(-1)
@@ -325,7 +339,7 @@ if __name__ == '__main__':
                 else:
                     cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
 
-                cls_dets = torch.cat((cls_boxes, cls_scores), 1)
+                cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
                 cls_dets = cls_dets[order]
                 keep = nms(cls_dets, cfg.TEST.NMS)
                 cls_dets = cls_dets[keep.view(-1).long()]

@@ -12,10 +12,11 @@ from __future__ import print_function
 
 __sets = {}
 
-from datasets.coco import coco
-from datasets.vg import vg
-from datasets.ade import ade
-from datasets.pascal_voc import pascal_voc
+from lib.datasets.coco import coco
+from lib.datasets.vg import vg
+from lib.datasets.ade import ade
+from lib.datasets.pascal_voc import pascal_voc
+from lib.datasets.dior import dior
 
 import numpy as np
 
@@ -24,6 +25,10 @@ for year in ['2007', '2012']:
   for split in ['train', 'val', 'trainval', 'test']:
     name = 'voc_{}_{}'.format(year, split)
     __sets[name] = (lambda split=split, year=year: pascal_voc(split, year))
+
+for split in ['train', 'val', 'test']:
+    name = 'dior_{}'.format(split)
+    __sets[name] = (lambda split=split: dior(split))
 
 for year in ['2014']:
   for split in ['train', 'val', 'minival', 'valminusminival', 'trainval']:

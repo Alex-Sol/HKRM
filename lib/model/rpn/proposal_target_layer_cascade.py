@@ -112,7 +112,6 @@ class _ProposalTargetLayer(nn.Module):
         examples.
         """
         # overlaps: (rois x gt_boxes)
-
         overlaps = bbox_overlaps_batch(all_rois, gt_boxes)
         # max_overlaps = max overlap of (candidate rois with gt_rois)
         max_overlaps, gt_assignment = torch.max(overlaps, 2)
@@ -180,6 +179,11 @@ class _ProposalTargetLayer(nn.Module):
                 bg_rois_per_this_image = rois_per_image
                 fg_rois_per_this_image = 0
             else:
+                torch.set_printoptions(profile="full")
+                print("gt_boxes: ")
+                print(gt_boxes)
+                print("all_rois: ")
+                print(all_rois)
                 raise ValueError("bg_num_rois = 0 and fg_num_rois = 0, this should not happen!")
                 
             # The indices that we're selecting (both fg and bg)

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+CUDA_VISIBLE_DEVICES=0 python trainval_HKRM.py --dataset ade --bs 4 --nw 1 --save_dir /home/zengli/HKRM/checkpoints/ --init --net HKRM --attr_size 256 --rela_size 256 --spat_size 256

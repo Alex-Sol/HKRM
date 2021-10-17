@@ -54,3 +54,9 @@ ENV/
 env.bak/
 venv.bak/
 .idea/
+*.pyc
+*.pth
+*.pkl
+*.rs-Super-Server
+*.png
+.DS_Store/

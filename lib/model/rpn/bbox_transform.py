@@ -172,11 +172,11 @@ def bbox_overlaps_batch(anchors, gt_boxes):
 
     overlaps: (N, K) ndarray of overlap between boxes and query_boxes
     """
+    #compute IOU
     batch_size = gt_boxes.size(0)
 
 
     if anchors.dim() == 2:
-
         N = anchors.size(0)
         K = gt_boxes.size(1)
 
