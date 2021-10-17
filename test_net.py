@@ -187,10 +187,10 @@ if __name__ == '__main__':
     pprint.pprint(cfg)
 
     cfg.TRAIN.USE_FLIPPED = False
-    imdb = combined_roidb(args.imdbval_name, False)
+    imdb, roidb, ratio_list, ratio_index = combined_roidb(args.imdbval_name, False)
     imdb.competition_mode(on=False)
 
-    # print('{:d} roidb entries'.format(len(roidb)))
+    print('{:d} roidb entries'.format(len(roidb)))
 
     input_dir = args.load_dir
     if not os.path.exists(input_dir):
@@ -368,8 +368,8 @@ if __name__ == '__main__':
         if vis:
             im_dir = 'vis/' + str(data[4].numpy()[0]) + '_baseline.png'
             cv2.imwrite(im_dir, im2show)
-            plt.imshow(im2show[:, :, ::-1])
-            plt.show()
+            # plt.imshow(im2show[:, :, ::-1])
+            # plt.show()
 
     
 

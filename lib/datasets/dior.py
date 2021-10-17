@@ -124,18 +124,16 @@ class dior(imdb):
         This function loads/saves from/to a cache file to speed up future calls.
         """
         cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
-        if os.path.exists(cache_file):
-            with open(cache_file, 'rb') as fid:
-                roidb = pickle.load(fid)
-            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
-            return roidb
+        # if os.path.exists(cache_file):
+        #     with open(cache_file, 'rb') as fid:
+        #         roidb = pickle.load(fid)
+        #     print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+        #     return roidb
 
-        # gt_roidb = [self._load_pascal_annotation(index)
-        #             for index in self.image_index]
-        gt_roidb = [{}
+        gt_roidb = [self._load_pascal_annotation(index)
                     for index in self.image_index]
-        with open(cache_file, 'wb') as fid:
-            pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
+        # with open(cache_file, 'wb') as fid:
+        #     pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
         print('wrote gt roidb to {}'.format(cache_file))
 
         return gt_roidb
@@ -211,9 +209,9 @@ class dior(imdb):
         Load image and bounding boxes info from XML file in the PASCAL VOC
         format.
         """
-        filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
-        tree = ET.parse(filename)
-        objs = tree.findall('object')
+        # filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
+        # tree = ET.parse(filename)
+        # objs = tree.findall('object')
         # if not self.config['use_diff']:
         #     # Exclude the samples labeled as difficult
         #     non_diff_objs = [
@@ -222,7 +220,7 @@ class dior(imdb):
         #     #     print 'Removed {} difficult objects'.format(
         #     #         len(objs) - len(non_diff_objs))
         #     objs = non_diff_objs
-        num_objs = len(objs)
+        num_objs = 0
 
         boxes = np.zeros((num_objs, 4), dtype=np.uint16)
         gt_classes = np.zeros((num_objs), dtype=np.int32)
@@ -232,9 +230,9 @@ class dior(imdb):
         ishards = np.zeros((num_objs), dtype=np.int32)
 
         # Load object bounding boxes into a data frame.
-        wh = tree.find('size')
-        w, h = int(wh.find('width').text), int(wh.find('height').text)
-        for ix, obj in enumerate(objs):
+        # wh = tree.find('size')
+        # w, h = int(wh.find('width').text), int(wh.find('height').text)
+        '''for ix, obj in enumerate(objs):
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
             x1 = float(bbox.find('xmin').text)
@@ -255,7 +253,7 @@ class dior(imdb):
             boxes[ix, :] = [x1, y1, x2, y2]
             gt_classes[ix] = cls
             overlaps[ix, cls] = 1.0
-            seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
+            seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)'''
 
         overlaps = scipy.sparse.csr_matrix(overlaps)
 

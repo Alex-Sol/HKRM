@@ -113,20 +113,20 @@ def combined_roidb(imdb_names, training=True):
     roidb = get_training_roidb(imdb)
     return roidb
 
-  # roidbs = [get_roidb(s) for s in imdb_names.split('+')]
-  # roidb = roidbs[0]
+  roidbs = [get_roidb(s) for s in imdb_names.split('+')]
+  roidb = roidbs[0]
 
-  # if len(roidbs) > 1:
-  #   for r in roidbs[1:]:
-  #     roidb.extend(r)
-  #   tmp = get_imdb(imdb_names.split('+')[1])
-  #   imdb = datasets.imdb.imdb(imdb_names, tmp.classes)
-  # else:
-  imdb = get_imdb(imdb_names)
+  if len(roidbs) > 1:
+    for r in roidbs[1:]:
+      roidb.extend(r)
+    tmp = get_imdb(imdb_names.split('+')[1])
+    imdb = datasets.imdb.imdb(imdb_names, tmp.classes)
+  else:
+    imdb = get_imdb(imdb_names)
 
-  # if training:
-  #   roidb = filter_roidb(roidb)
+  if training:
+    roidb = filter_roidb(roidb)
 
   ratio_list, ratio_index = rank_roidb_ratio(roidb)
 
-  return imdb
+  return imdb,roidb,ratio_list,ratio_index
