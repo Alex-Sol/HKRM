@@ -100,19 +100,20 @@ class dior(imdb):
         """
         # Example path to image set file:
         # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
-        image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
-                                      self._image_set + '.txt')
-        assert os.path.exists(image_set_file), \
-            'Path does not exist: {}'.format(image_set_file)
-        with open(image_set_file) as f:
-            image_index = [x.strip() for x in f.readlines()]
+        # image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
+        #                               self._image_set + '.txt')
+        # assert os.path.exists(image_set_file), \
+        #     'Path does not exist: {}'.format(image_set_file)
+        # with open(image_set_file) as f:
+        #     image_index = [x.strip() for x in f.readlines()]
+        image_index = os.listdir(os.path.join(self._data_path, "imgs"))
         return image_index
 
     def _get_default_path(self):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, 'DIOR')
+        return cfg.DATA_DIR
 
     def gt_roidb(self):
         """

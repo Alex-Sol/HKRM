@@ -187,10 +187,10 @@ if __name__ == '__main__':
     pprint.pprint(cfg)
 
     cfg.TRAIN.USE_FLIPPED = False
-    imdb, roidb, ratio_list, ratio_index = combined_roidb(args.imdbval_name, False)
+    imdb = combined_roidb(args.imdbval_name, False)
     imdb.competition_mode(on=False)
 
-    print('{:d} roidb entries'.format(len(roidb)))
+    # print('{:d} roidb entries'.format(len(roidb)))
 
     input_dir = args.load_dir
     if not os.path.exists(input_dir):
